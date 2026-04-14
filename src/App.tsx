@@ -194,6 +194,16 @@ const Exam = ({
     setUserAnswers(newAnswers);
   };
 
+  if (!questions || questions.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 text-center">
+        <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
+        <h2 className="text-xl font-bold text-slate-900 mb-2">কোনো প্রশ্ন পাওয়া যায়নি</h2>
+        <button onClick={() => window.location.reload()} className="btn-secondary">আবার চেষ্টা করুন</button>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 pb-32">
       <div className="sticky top-20 z-40 mb-8">
@@ -406,11 +416,16 @@ export default function App() {
     setConfig(examConfig);
     setView('loading');
     setError(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     
     try {
       const generatedQuestions = await generateMCQs(examConfig.category, examConfig.questionCount);
+      if (!generatedQuestions || generatedQuestions.length === 0) {
+        throw new Error("কোনো প্রশ্ন পাওয়া যায়নি। আবার চেষ্টা করুন।");
+      }
       setQuestions(generatedQuestions);
       setView('exam');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
       console.error(err);
       const errorMessage = err instanceof Error ? err.message : String(err);

@@ -1,10 +1,11 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { MCQ, Category } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+const API_KEY = process.env.GEMINI_API_KEY || "AIzaSyDv48H8C-7pJL1xzm9PlBbixy7vMGDgyMA";
+const ai = new GoogleGenAI({ apiKey: API_KEY });
 
 export async function generateMCQs(category: Category, count: number): Promise<MCQ[]> {
-  if (!process.env.GEMINI_API_KEY) {
+  if (!API_KEY) {
     throw new Error("Gemini API Key is missing. Please check your environment variables.");
   }
 
@@ -47,7 +48,25 @@ export async function generateMCQs(category: Category, count: number): Promise<M
     
     // Clean JSON string in case AI adds markdown backticks
     const cleanJson = text.replace(/```json/g, "").replace(/```/g, "").trim();
-    const mcqs: MCQ[] = JSON.parse(cleanJson);
+    let mcqs: MCQ[] = JSON.parse(cleanJson);
+
+    // Validation: Ensure it's an array and has valid questions
+    if (!Array.isArray(mcqs)) {
+      throw new Error("AI returned invalid data format (not an array)");
+    }
+
+    // Filter out any malformed questions
+    mcqs = mcqs.filter(q => 
+      q.question && 
+      Array.isArray(q.options) && 
+      q.options.length >= 2 && 
+      q.correct_answer
+    );
+
+    if (mcqs.length === 0) {
+      throw new Error("AI failed to generate any valid questions. Please try again.");
+    }
+
     return mcqs;
   } catch (error) {
     console.error("Error generating MCQs:", error);
