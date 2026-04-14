@@ -4,19 +4,22 @@ import { MCQ, Category } from "../types";
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 export async function generateMCQs(category: Category, count: number): Promise<MCQ[]> {
+  if (!process.env.GEMINI_API_KEY) {
+    throw new Error("Gemini API Key is missing. Please check your environment variables.");
+  }
+
   try {
     const categoryPrompt = category === "Random" 
       ? "a mix of all BCS topics (Bangladesh Affairs, ICT, English, Math, Science, etc.)" 
       : `the category: ${category}`;
 
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: `Generate ${count} completely unique and random multiple choice questions for BCS (Bangladesh Civil Service) exam preparation in Bangla language (বাংলা ভাষা). 
-      The questions should be from ${categoryPrompt}. 
-      Ensure a diverse selection of topics within the category, including BCS suggestions, previous years' BCS exam questions, and relevant current affairs. 
-      Each question must have exactly 4 options and include the correct answer. 
-      Keep difficulty medium to advanced. 
-      All text (question, options, correct_answer) MUST be in Bangla.`,
+      model: "gemini-2.0-flash",
+      contents: `Generate ${count} unique multiple choice questions for BCS (Bangladesh Civil Service) exam preparation in Bangla. 
+      Topic: ${categoryPrompt}. 
+      Include BCS suggestions and previous years' questions. 
+      Each question must have exactly 4 options and a correct answer. 
+      All text MUST be in Bangla.`,
       config: {
         responseMimeType: "application/json",
         seed: Math.floor(Math.random() * 1000000),

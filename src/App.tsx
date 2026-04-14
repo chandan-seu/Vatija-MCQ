@@ -413,7 +413,8 @@ export default function App() {
       setView('exam');
     } catch (err) {
       console.error(err);
-      setError("প্রশ্ন তৈরি করতে সমস্যা হয়েছে। দয়া করে আবার চেষ্টা করুন।");
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      setError(`প্রশ্ন তৈরি করতে সমস্যা হয়েছে: ${errorMessage}`);
       setView('home');
     }
   };
